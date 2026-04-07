@@ -186,30 +186,42 @@ function runFeistel16(block, key) {
     return R + L;
 }
 
+// --- BULLETPROOF VISUALIZER FIX ---
 async function apply3DESWithVisuals(text) {
     const viz = document.getElementById('encryption-visualizer');
-    const steps = [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')];
     const resultBox = document.getElementById('viz-result');
-    viz.classList.remove('hidden');
+    const step1 = document.getElementById('step-1');
+    const step2 = document.getElementById('step-2');
+    const step3 = document.getElementById('step-3');
     
-    steps[0].classList.add('active');
+    if (viz) viz.classList.remove('hidden');
+    
+    // Phase 1
+    if (step1) step1.classList.add('active');
     let s1 = runFeistel16(text, SYSTEM_KEY);
-    resultBox.innerText = "K1 Applied: " + btoa(s1).substring(0,10) + "...";
+    if (resultBox) resultBox.innerText = "K1 Applied: " + btoa(s1).substring(0,10) + "...";
     await new Promise(r => setTimeout(r, 600));
 
-    steps[1].classList.add('active');
+    // Phase 2
+    if (step2) step2.classList.add('active');
     let s2 = runFeistel16(s1, SYSTEM_KEY.split('').reverse().join(''));
-    resultBox.innerText = "K2 Inverse Applied: " + btoa(s2).substring(0,10) + "...";
+    if (resultBox) resultBox.innerText = "K2 Inverse Applied: " + btoa(s2).substring(0,10) + "...";
     await new Promise(r => setTimeout(r, 600));
 
-    steps[2].classList.add('active');
+    // Phase 3
+    if (step3) step3.classList.add('active');
     let s3 = runFeistel16(s2, SYSTEM_KEY);
     const finalCipher = "3DES-" + btoa(s3);
-    resultBox.innerText = "Final 3DES Cipher: " + finalCipher;
+    if (resultBox) resultBox.innerText = "Final 3DES Cipher: " + finalCipher;
     await new Promise(r => setTimeout(r, 800));
 
-    viz.classList.add('hidden');
-    steps.forEach(s => s.classList.remove('active'));
+    if (viz) viz.classList.add('hidden');
+    
+    // Cleanup
+    if (step1) step1.classList.remove('active');
+    if (step2) step2.classList.remove('active');
+    if (step3) step3.classList.remove('active');
+    
     return finalCipher;
 }
 
@@ -338,6 +350,10 @@ function updateTable(dataToDisplay, role = sessionStorage.getItem('activeRole'),
 
         if (isAdmin) {
             let displaySerial = item.serials[0];
+            
+            // Generate a shortened preview of the 3DES text for the table layout
+            let shortSerial = displaySerial.length > 25 ? displaySerial.substring(0, 25) + '...' : displaySerial;
+            
             let actionHtml = '';
             
             if (item.status === 'Pending Approval') {
@@ -353,7 +369,8 @@ function updateTable(dataToDisplay, role = sessionStorage.getItem('activeRole'),
                 actionHtml = `<button onclick="removeItem('${item._id}')" class="btn-delete-row">Delete</button>`;
             }
             
-            row += `<td style="cursor:pointer; font-family:monospace; color:#3b82f6;" onclick="unlockItem('${item._id}')">${displaySerial}</td>
+            // Render the shortened serial, but keep the onclick event to show the full decrypted version
+            row += `<td style="cursor:pointer; font-family:monospace; color:#3b82f6;" title="Click to Decrypt" onclick="unlockItem('${item._id}')">${shortSerial}</td>
                     <td>${statusHtml}</td><td>${actionHtml}</td>`;
         } else {
             let btn = '';

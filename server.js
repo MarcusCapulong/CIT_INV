@@ -12,7 +12,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname))); 
 
 // --- DATABASE CONNECTION ---
-const dbURI = 'mongodb+srv://admin:admin@citinventory.prlagxm.mongodb.net/?appName=CITINVENTORY';
+// Updated to the correct UA-CITINV cluster and added /cit_vault database target
+const dbURI = 'mongodb+srv://admin:admin@ua-citinv.k3it38i.mongodb.net/cit_vault?appName=UA-CITINV';
 
 mongoose.connect(dbURI)
     .then(() => console.log('✅ MongoDB Connected'))
